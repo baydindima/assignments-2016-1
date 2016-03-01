@@ -59,11 +59,7 @@ public class StringSetTest {
     public static StringSet instance() {
         try {
             return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         throw new IllegalStateException("Error while class loading");
