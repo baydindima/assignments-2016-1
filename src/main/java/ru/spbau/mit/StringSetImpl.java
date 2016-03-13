@@ -1,6 +1,8 @@
 package ru.spbau.mit;
 
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
     private Node root = new Node();
     private int count = 0;
 
@@ -39,7 +41,29 @@ public class StringSetImpl implements StringSet {
         return root.howManyStartsWithPrefix(prefix);
     }
 
-    private static final class Node {
+    @Override
+    public void serialize(OutputStream out) {
+        DataOutputStream stream = new DataOutputStream(out);
+        try {
+            stream.writeInt(count);
+            root.serialize(out);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    @Override
+    public void deserialize(InputStream in) {
+        DataInputStream stream = new DataInputStream(in);
+        try {
+            count = stream.readInt();
+            root.deserialize(in);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    private static final class Node implements StreamSerializable {
         private static final int ALPHABET_LENGTH = 'Z' - 'A' + 1 + 'z' - 'a' + 1;
         private int count;
         private boolean wordEnd;
@@ -121,6 +145,57 @@ public class StringSetImpl implements StringSet {
                 return 0;
             }
             return curNode.count;
+        }
+
+        private int getNotNullNodeCount() {
+            int count = 0;
+            for (Node node : nodes) {
+                if (node != null) {
+                    count += 1;
+                }
+            }
+            return count;
+        }
+
+        @Override
+        public void serialize(OutputStream out) {
+            DataOutputStream stream = new DataOutputStream(out);
+            try {
+                stream.writeInt(count);
+                stream.writeBoolean(wordEnd);
+
+                stream.writeInt(getNotNullNodeCount());
+
+                for (int i = 0; i < nodes.length; i++) {
+                    Node node = nodes[i];
+                    if (node != null) {
+                        stream.writeInt(i);
+                        node.serialize(out);
+                    }
+                }
+            } catch (IOException e) {
+                throw new SerializationException(e);
+            }
+        }
+
+
+        @Override
+        public void deserialize(InputStream in) {
+            DataInputStream stream = new DataInputStream(in);
+            try {
+                count = stream.readInt();
+                wordEnd = stream.readBoolean();
+
+                int nodeCount = stream.readInt();
+                for (int i = 0; i < nodeCount; i++) {
+                    int charIndex = stream.readInt();
+                    Node node = new Node();
+                    nodes[charIndex] = node;
+                    node.deserialize(in);
+                }
+            } catch (IOException e) {
+                throw new SerializationException(e);
+            }
         }
     }
 }
