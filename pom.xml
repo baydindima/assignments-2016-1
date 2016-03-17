@@ -76,6 +76,7 @@
                         </goals>
                         <configuration>
                             <configLocation>src/test/resources/checkstyle.xml</configLocation>
+                            <suppressionsLocation>src/test/resources/suppressions.xml</suppressionsLocation>
                             <failOnViolation>true</failOnViolation>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         </configuration>
