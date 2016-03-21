@@ -4,12 +4,10 @@ import java.io.*;
 
 public class StringSetImpl implements StringSet, StreamSerializable {
     private Node root = new Node();
-    private int count = 0;
 
     @Override
     public boolean add(String element) {
         if (!root.contains(element)) {
-            count += 1;
             root.add(element);
             return true;
         }
@@ -24,7 +22,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public boolean remove(String element) {
         if (root.contains(element)) {
-            count -= 1;
             root.remove(element);
             return true;
         }
@@ -33,7 +30,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     @Override
     public int size() {
-        return count;
+        return root.count;
     }
 
     @Override
@@ -45,8 +42,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     public void serialize(OutputStream out) {
         DataOutputStream stream = new DataOutputStream(out);
         try {
-            stream.writeInt(count);
-            root.serialize(out);
+            root.serialize(stream);
         } catch (IOException e) {
             throw new SerializationException(e);
         }
@@ -56,14 +52,13 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     public void deserialize(InputStream in) {
         DataInputStream stream = new DataInputStream(in);
         try {
-            count = stream.readInt();
-            root.deserialize(in);
+            root.deserialize(stream);
         } catch (IOException e) {
             throw new SerializationException(e);
         }
     }
 
-    private static final class Node implements StreamSerializable {
+    private static final class Node {
         private static final int ALPHABET_LENGTH = 'Z' - 'A' + 1 + 'z' - 'a' + 1;
         private int count;
         private boolean wordEnd;
@@ -157,44 +152,32 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             return count;
         }
 
-        @Override
-        public void serialize(OutputStream out) {
-            DataOutputStream stream = new DataOutputStream(out);
-            try {
-                stream.writeInt(count);
-                stream.writeBoolean(wordEnd);
+        public void serialize(DataOutputStream stream) throws IOException {
+            stream.writeBoolean(wordEnd);
+            stream.writeInt(getNotNullNodeCount());
 
-                stream.writeInt(getNotNullNodeCount());
-
-                for (int i = 0; i < nodes.length; i++) {
-                    Node node = nodes[i];
-                    if (node != null) {
-                        stream.writeInt(i);
-                        node.serialize(out);
-                    }
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (node != null) {
+                    stream.writeInt(i);
+                    node.serialize(stream);
                 }
-            } catch (IOException e) {
-                throw new SerializationException(e);
             }
         }
 
+        public void deserialize(DataInputStream stream) throws IOException {
+            wordEnd = stream.readBoolean();
+            if (wordEnd) {
+                count = 1;
+            }
 
-        @Override
-        public void deserialize(InputStream in) {
-            DataInputStream stream = new DataInputStream(in);
-            try {
-                count = stream.readInt();
-                wordEnd = stream.readBoolean();
-
-                int nodeCount = stream.readInt();
-                for (int i = 0; i < nodeCount; i++) {
-                    int charIndex = stream.readInt();
-                    Node node = new Node();
-                    nodes[charIndex] = node;
-                    node.deserialize(in);
-                }
-            } catch (IOException e) {
-                throw new SerializationException(e);
+            int nodeCount = stream.readInt();
+            for (int i = 0; i < nodeCount; i++) {
+                int charIndex = stream.readInt();
+                Node node = new Node();
+                nodes[charIndex] = node;
+                node.deserialize(stream);
+                count += node.count;
             }
         }
     }
