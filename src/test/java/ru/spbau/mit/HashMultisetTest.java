@@ -85,6 +85,10 @@ public class HashMultisetTest {
 
         Iterator<? extends Multiset.Entry<Integer>> iterator = multiset.entrySet().iterator();
 
+        for (Integer integer : multiset) {
+            System.out.println(integer);
+        }
+
         assertTrue(iterator.hasNext());
         Multiset.Entry<Integer> next = iterator.next();
         assertThat(next.getElement(), is(3));
