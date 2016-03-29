@@ -7,10 +7,6 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 
 public class CollectionsTest {
-    private List<Integer> listOfInt = Arrays.asList(1, 3, 6, 12);
-
-    private List<String> listOfString = Arrays.asList(" first ", " second ", " third ", " forth ");
-
     private Predicate<Integer> isEven = new Predicate<Integer>() {
         @Override
         public Boolean apply(Integer value) {
@@ -34,23 +30,18 @@ public class CollectionsTest {
 
     @Test
     public void testMap() throws Exception {
-        Collection<Integer> map = Collections.map(listOfInt, new Function1<Integer, Integer>() {
+        Collection<Integer> map = Collections.map(Arrays.asList(1, 3, 6, 12), new Function1<Integer, Integer>() {
             @Override
             public Integer apply(Integer value) {
                 return value * value;
             }
         });
-        Integer[] result = map.toArray(new Integer[map.size()]);
-        assertEquals(4, result.length);
-        assertEquals(1, (int) result[0]);
-        assertEquals(9, (int) result[1]);
-        assertEquals(36, (int) result[2]);
-        assertEquals(144, (int) result[3]);
+        assertEquals(Arrays.asList(1, 9, 36, 144), new ArrayList<>(map));
     }
 
     @Test
     public void testFilter() throws Exception {
-        Collection<Integer> map = Collections.filter(listOfInt, isEven);
+        Collection<Integer> map = Collections.filter(Arrays.asList(1, 3, 6, 12), isEven);
         Integer[] result = map.toArray(new Integer[map.size()]);
         assertEquals(2, result.length);
         assertEquals(6, (int) result[0]);
@@ -59,7 +50,7 @@ public class CollectionsTest {
 
     @Test
     public void testTakeWhile() throws Exception {
-        Collection<Integer> map = Collections.takeWhile(listOfInt, isEven.not());
+        Collection<Integer> map = Collections.takeWhile(Arrays.asList(1, 3, 6, 12), isEven.not());
         Integer[] result = map.toArray(new Integer[map.size()]);
         assertEquals(2, result.length);
         assertEquals(1, (int) result[0]);
@@ -68,7 +59,7 @@ public class CollectionsTest {
 
     @Test
     public void testTakeUnless() throws Exception {
-        Collection<Integer> map = Collections.takeUnless(listOfInt, isEven);
+        Collection<Integer> map = Collections.takeUnless(Arrays.asList(1, 3, 6, 12), isEven);
         Integer[] result = map.toArray(new Integer[map.size()]);
         assertEquals(2, result.length);
         assertEquals(1, (int) result[0]);
@@ -78,16 +69,18 @@ public class CollectionsTest {
     @Test
     public void testFoldr() throws Exception {
         assertEquals(" first  second  third  forth start ",
-                Collections.foldr(listOfString, "start ", concatenate));
+                Collections.foldr(Arrays.asList(" first ", " second ", " third ", " forth "),
+                        "start ", concatenate));
 
-        assertEquals(12, (int) Collections.foldr(listOfInt, 20, subtraction));
+        assertEquals(12, (int) Collections.foldr(Arrays.asList(1, 3, 6, 12), 20, subtraction));
     }
 
     @Test
     public void testFoldl() throws Exception {
         assertEquals("start  first  second  third  forth ",
-                Collections.foldl(listOfString, "start ", concatenate));
+                Collections.foldl(Arrays.asList(" first ", " second ", " third ", " forth "),
+                        "start ", concatenate));
 
-        assertEquals(-2, (int) Collections.foldl(listOfInt, 20, subtraction));
+        assertEquals(-2, (int) Collections.foldl(Arrays.asList(1, 3, 6, 12), 20, subtraction));
     }
 }

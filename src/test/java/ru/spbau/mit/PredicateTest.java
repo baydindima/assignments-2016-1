@@ -13,6 +13,13 @@ public class PredicateTest {
         }
     };
 
+    private Predicate<Integer> exception = new Predicate<Integer>() {
+        @Override
+        public Boolean apply(Integer value) {
+            throw new RuntimeException();
+        }
+    };
+
     private Predicate<Integer> isEven = new Predicate<Integer>() {
         @Override
         public Boolean apply(Integer value) {
@@ -49,6 +56,7 @@ public class PredicateTest {
         assertTrue(moreThanFiveOrIsEven.apply(7)); // True False
         assertTrue(moreThanFiveOrIsEven.apply(4)); // False True
         assertFalse(moreThanFiveOrIsEven.apply(3)); // False False
+        assertTrue(moreThanFive.or(exception).apply(10));
     }
 
     @Test
@@ -58,6 +66,7 @@ public class PredicateTest {
         assertFalse(moreThanFiveAndIsEven.apply(7)); // True False
         assertFalse(moreThanFiveAndIsEven.apply(4)); // False True
         assertFalse(moreThanFiveAndIsEven.apply(3)); // False False
+        assertFalse(moreThanFive.and(exception).apply(0));
     }
 
     @Test

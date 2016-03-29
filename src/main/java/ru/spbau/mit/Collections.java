@@ -9,16 +9,16 @@ public final class Collections {
     private Collections() {
     }
 
-    private static <T> Collection<T> getEmptyCollection() {
-        return new ArrayList<>();
-    }
-
     public static <T, R> Collection<R> map(Iterable<T> initCollection, Function1<? super T, R> func) {
         Collection<R> result = getEmptyCollection();
         for (T t : initCollection) {
             result.add(func.apply(t));
         }
         return java.util.Collections.unmodifiableCollection(result);
+    }
+
+    private static <T> Collection<T> getEmptyCollection() {
+        return new ArrayList<>();
     }
 
     public static <T> Collection<T> filter(Iterable<T> initCollection, Predicate<? super T> predicate) {
@@ -48,22 +48,18 @@ public final class Collections {
 
     private static <T, R> R foldrIterator(Iterator<T> iterator,
                                           R initValue, Function2<? super T, ? super R, R> function) {
-        T fst = iterator.next();
         R snd = initValue;
         if (iterator.hasNext()) {
+            T fst = iterator.next();
             snd = foldrIterator(iterator, initValue, function);
+            return function.apply(fst, snd);
         }
-        return function.apply(fst, snd);
+        return snd;
     }
 
     public static <T, R> R foldr(Iterable<T> initCollection,
                                  R initValue, Function2<? super T, ? super R, R> function) {
-        Iterator<T> iterator = initCollection.iterator();
-        if (iterator.hasNext()) {
-            return foldrIterator(iterator, initValue, function);
-        } else {
-            return initValue;
-        }
+        return foldrIterator(initCollection.iterator(), initValue, function);
     }
 
     public static <T, R> R foldl(Iterable<T> initCollection,
