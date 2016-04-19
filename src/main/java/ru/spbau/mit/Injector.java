@@ -23,21 +23,10 @@ public final class Injector {
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
         reset();
         loadedClasses.add(rootClassName);
-
         Class aClass = Class.forName(rootClassName);
-
         Constructor[] declaredConstructors = aClass.getDeclaredConstructors();
-        if (declaredConstructors.length > 1) {
-            throw new AmbiguousImplementationException();
-        }
-
         Constructor constructor = declaredConstructors[0];
         Parameter[] parameters = constructor.getParameters();
-
-        if (parameters.length != implementationClassNames.size()) {
-            throw new AmbiguousImplementationException();
-        }
-
         Object[] values = new Object[parameters.length];
         for (int i1 = 0; i1 < parameters.length; i1++) {
             Parameter parameter = parameters[i1];
@@ -52,13 +41,11 @@ public final class Injector {
                     cClass = bClass;
                 }
             }
-
             if (cClass == null) {
                 throw new ImplementationNotFoundException();
             }
 
             resetVisited();
-
             values[i1] = initializePrivate(cClass.getName());
         }
 
@@ -85,31 +72,17 @@ public final class Injector {
             return intancedClasses.get(rootClassName);
         }
 
-        Class aClass;
-        try {
-            aClass = Class.forName(rootClassName);
-        } catch (ClassNotFoundException e) {
-            throw new ImplementationNotFoundException();
-        }
+        Class aClass = Class.forName(rootClassName);
+
 
         Constructor[] declaredConstructors = aClass.getDeclaredConstructors();
-        if (declaredConstructors.length > 1) {
-            throw new AmbiguousImplementationException();
-        }
-
         Constructor constructor = declaredConstructors[0];
-
         Parameter[] parameters = constructor.getParameters();
+
         Object[] values = new Object[parameters.length];
         for (int i1 = 0; i1 < parameters.length; i1++) {
             Parameter parameter = parameters[i1];
             String name = parameter.getType().getName();
-            if (loadedClasses.indexOf(name) != -1) {
-                throw new InjectionCycleException();
-            }
-
-            loadedClasses.add(name);
-
             values[i1] = initializePrivate(name);
         }
 
