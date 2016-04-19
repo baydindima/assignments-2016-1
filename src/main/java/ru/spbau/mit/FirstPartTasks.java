@@ -30,8 +30,8 @@ public final class FirstPartTasks {
     public static List<Album> sortedFavorites(Stream<Album> s) {
         final int favoriteBound = 95;
         return s.filter(album -> album.getTracks().stream()
-                .filter(track -> track.getRating() > favoriteBound).count() > 0)
-                .sorted((o1, o2) -> o1.getName().compareTo(o2.getName()))
+                .anyMatch(track -> track.getRating() > favoriteBound))
+                .sorted(Comparator.comparing(Album::getName))
                 .collect(Collectors.toList());
     }
 
@@ -62,26 +62,29 @@ public final class FirstPartTasks {
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
         return albums.min(
-                (o1, o2) -> getMaxTrackRate(o1.getTracks().stream()) - getMaxTrackRate(o2.getTracks().stream())
+                Comparator.comparing(
+                        album -> album.getTracks()
+                                .stream()
+                                .map(Track::getRating)
+                                .max(Integer::compare)
+                                .orElseGet(() -> 0))
         );
-    }
-
-    private static int getMaxTrackRate(Stream<Track> tracks) {
-        Optional<Track> minTrack = tracks.max((o1, o2) -> o1.getRating() - o2.getRating());
-        return minTrack.isPresent() ? minTrack.get().getRating() : 0;
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
-        return albums.sorted((o1, o2) ->
-                        (int) (getAverageTrackRate(o2.getTracks().stream())
-                                - getAverageTrackRate(o1.getTracks().stream()))
+        return albums.sorted(
+                Comparator.comparing(
+                        album -> -album
+                                .getTracks()
+                                .stream()
+                                .collect(
+                                        Collectors.averagingDouble(
+                                                Track::getRating
+                                        )
+                                )
+                )
         ).collect(Collectors.toList());
-    }
-
-    private static double getAverageTrackRate(Stream<Track> tracks) {
-        OptionalDouble average = tracks.mapToInt(Track::getRating).average();
-        return average.isPresent() ? average.getAsDouble() : 0;
     }
 
     // Произведение всех чисел потока по модулю 'modulo'
@@ -98,6 +101,6 @@ public final class FirstPartTasks {
 
     // Вернуть поток из объектов класса 'clazz'
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        return s.filter(clazz::isInstance).map(clazz::cast);
+        return (Stream<R>) s.filter(clazz::isInstance);
     }
 }
