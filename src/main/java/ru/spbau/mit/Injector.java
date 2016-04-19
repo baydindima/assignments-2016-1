@@ -15,13 +15,13 @@ public final class Injector {
     private Injector() {
     }
 
-
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
         reset();
+
         loadedClasses.add(rootClassName);
         Class aClass = Class.forName(rootClassName);
         Constructor[] declaredConstructors = aClass.getDeclaredConstructors();
@@ -62,20 +62,18 @@ public final class Injector {
     }
 
     private static Object initializePrivate(String rootClassName) throws Exception {
-        if (loadedClasses.contains(rootClassName)) {
-            throw new InjectionCycleException();
-        }
-
-        loadedClasses.add(rootClassName);
-
         if (intancedClasses.containsKey(rootClassName)) {
             return intancedClasses.get(rootClassName);
         }
 
+        if (loadedClasses.contains(rootClassName)) {
+            throw new InjectionCycleException();
+        }
+        loadedClasses.add(rootClassName);
+
         Class aClass = Class.forName(rootClassName);
 
-
-        Constructor[] declaredConstructors = aClass.getDeclaredConstructors();
+        Constructor[] declaredConstructors = aClass.getConstructors();
         Constructor constructor = declaredConstructors[0];
         Parameter[] parameters = constructor.getParameters();
 
