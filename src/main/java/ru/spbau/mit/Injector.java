@@ -42,6 +42,11 @@ public final class Injector {
                 }
             }
             if (cClass == null) {
+                if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
+                    throw new InjectionCycleException();
+                }
+
+
                 throw new ImplementationNotFoundException();
             }
 
