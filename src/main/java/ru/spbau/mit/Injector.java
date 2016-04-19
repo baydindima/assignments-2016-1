@@ -25,7 +25,7 @@ public final class Injector {
         Constructor constructor = declaredConstructors[0];
         Parameter[] parameters = constructor.getParameters();
         if (parameters.length != implementationClassNames.size()) {
-            throw new RuntimeException();
+            throw new ImplementationNotFoundException();
         }
 
         Object[] values = new Object[parameters.length];
