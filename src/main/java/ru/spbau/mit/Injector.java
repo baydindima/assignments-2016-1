@@ -11,6 +11,7 @@ import java.util.Map;
 public final class Injector {
     private static Map<String, Object> intancedClasses;
     private static List<String> loadedClasses;
+    private static List<String> implementationClassNames;
 
     private Injector() {
     }
@@ -21,11 +22,10 @@ public final class Injector {
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
         reset();
-
+        Injector.implementationClassNames = implementationClassNames;
         loadedClasses.add(rootClassName);
         Class aClass = Class.forName(rootClassName);
-        Constructor[] declaredConstructors = aClass.getDeclaredConstructors();
-        Constructor constructor = declaredConstructors[0];
+        Constructor constructor = aClass.getConstructors()[0];
         Parameter[] parameters = constructor.getParameters();
         Object[] values = new Object[parameters.length];
         for (int i1 = 0; i1 < parameters.length; i1++) {
@@ -45,7 +45,6 @@ public final class Injector {
                 if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
                     throw new InjectionCycleException();
                 }
-
 
                 throw new ImplementationNotFoundException();
             }
@@ -86,7 +85,24 @@ public final class Injector {
         for (int i1 = 0; i1 < parameters.length; i1++) {
             Parameter parameter = parameters[i1];
             String name = parameter.getType().getName();
-            values[i1] = initializePrivate(name);
+            Class cClass = null;
+            for (String implementationClassName : implementationClassNames) {
+                Class bClass = Class.forName(implementationClassName);
+                if (parameter.getType().isAssignableFrom(bClass)) {
+                    if (cClass != null) {
+                        throw new AmbiguousImplementationException();
+                    }
+                    cClass = bClass;
+                }
+            }
+            if (cClass == null) {
+                if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
+                    throw new InjectionCycleException();
+                }
+                throw new InjectionCycleException();
+            }
+
+            values[i1] = initializePrivate(cClass.getName());
         }
 
         Object newInstance = constructor.newInstance(values);
