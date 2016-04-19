@@ -3,18 +3,27 @@ package ru.spbau.mit;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public final class Injector {
+    private static Map<String, Object> intancedClasses;
+    private static List<String> loadedClasses;
+
     private Injector() {
     }
+
 
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
+        reset();
+        loadedClasses.add(rootClassName);
+
         Class aClass = Class.forName(rootClassName);
 
         Constructor[] declaredConstructors = aClass.getDeclaredConstructors();
@@ -24,36 +33,58 @@ public final class Injector {
 
         Constructor constructor = declaredConstructors[0];
         Parameter[] parameters = constructor.getParameters();
+
         if (parameters.length != implementationClassNames.size()) {
-            throw new ImplementationNotFoundException();
+            throw new AmbiguousImplementationException();
         }
 
         Object[] values = new Object[parameters.length];
         for (int i1 = 0; i1 < parameters.length; i1++) {
             Parameter parameter = parameters[i1];
-            String name = parameter.getType().getName();
-
 
             Class cClass = null;
             for (String implementationClassName : implementationClassNames) {
                 Class bClass = Class.forName(implementationClassName);
                 if (parameter.getType().isAssignableFrom(bClass)) {
+                    if (cClass != null) {
+                        throw new AmbiguousImplementationException();
+                    }
                     cClass = bClass;
-                    break;
                 }
             }
 
+            if (cClass == null) {
+                throw new ImplementationNotFoundException();
+            }
 
-            List<String> loadedClasses = new ArrayList<>();
-            loadedClasses.add(cClass.getName());
-            values[i1] = initializePrivate(cClass.getName(), loadedClasses);
+            resetVisited();
+
+            values[i1] = initializePrivate(cClass.getName());
         }
 
         return constructor.newInstance(values);
     }
 
+    private static void reset() {
+        intancedClasses = new HashMap<>();
+        resetVisited();
+    }
 
-    private static Object initializePrivate(String rootClassName, List<String> loadedClasses) throws Exception {
+    private static void resetVisited() {
+        loadedClasses = new ArrayList<>();
+    }
+
+    private static Object initializePrivate(String rootClassName) throws Exception {
+        if (loadedClasses.contains(rootClassName)) {
+            throw new InjectionCycleException();
+        }
+
+        loadedClasses.add(rootClassName);
+
+        if (intancedClasses.containsKey(rootClassName)) {
+            return intancedClasses.get(rootClassName);
+        }
+
         Class aClass;
         try {
             aClass = Class.forName(rootClassName);
@@ -76,10 +107,15 @@ public final class Injector {
             if (loadedClasses.indexOf(name) != -1) {
                 throw new InjectionCycleException();
             }
+
             loadedClasses.add(name);
-            values[i1] = initializePrivate(name, loadedClasses);
+
+            values[i1] = initializePrivate(name);
         }
 
-        return constructor.newInstance(values);
+        Object newInstance = constructor.newInstance(values);
+        intancedClasses.put(rootClassName, newInstance);
+
+        return newInstance;
     }
 }
