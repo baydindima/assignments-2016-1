@@ -4,6 +4,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.util.*;
 
@@ -13,16 +16,79 @@ import static ru.spbau.mit.SecondPartTasks.*;
 
 
 public class SecondPartTasksTest {
+    final static String txt1 = "\"The Burden of Truth\"\n" +
+            "\n" +
+            "The Comtessa's father sits with impeccable posture.\n" +
+            "An empty bottle of port rests on his desk;\n" +
+            "his empty strong box still rests on the floor.\n" +
+            "A portrait of the Comtessa hangs over the mantle,\n" +
+            "barely visible in the light of the dying hearth.\n" +
+            "\"So,\" he says, looking past you.\n" +
+            "\"You must have encountered many distressing sights,\n" +
+            "in your work. How do you live with what you know?\"";
+
+    final static String txt2 = "\"The beginning of courage\"\n" +
+            "\n" +
+            "Her father reaches for his bottle;\n" +
+            "its lightness seems to surprise him,\n" +
+            "for he sets it back with a forlorn sigh.\n" +
+            "\"Perhaps you're right. But what if that truth is absurd, senseless?\n" +
+            "The soulless epidemic; that d__nable Brass Embassy.\n" +
+            "And you, unable to even bring back my -\"\n" +
+            "He shakes his head, and gestures that you should leave.";
+    final static String txt3 = "\"The pearls!\"\n" +
+            "\n" +
+            "The thieves are long gone,\n" +
+            "but you track down the moon-pearls to a dingy pawnbroker's shop in Spite.\n" +
+            "The foul-mouthed owner isn't keen on returning them,\n" +
+            "but capitulates when you mention the Constables.\n" +
+            "The Keen-Eyed Lapidary is greatly relieved by their return:\n" +
+            "but the pearls are all spoken for,\n" +
+            "and she has no funds to reward you.\n" +
+            "She promises to return the favour in future.";
+    final static String txt4 = "\"A perfect vantage point\"\n" +
+            "\n" +
+            "Sprawled on the hospital roof,\n" +
+            "you watch as bandaged invalids are\n" +
+            "wheeled into the ward and left in rows.\n" +
+            "Before the night is out, a spirifer comes to call at their bedsides.\n" +
+            "He is an unnerving sight; eyes like yellow diamonds,\n" +
+            "a mouth like a slash in a rubber sheet,\n" +
+            "and the most unnaturally enormous hat.\n" +
+            "\n" +
+            "He leans over a bedside,\n" +
+            "and, with a device like a brass tuning fork,\n" +
+            "gently winds the soul from an invalid's mouth.\n" +
+            "\n" +
+            "It is a simple matter to follow him home.\n" +
+            "A quick tap on the back of the head with your trusty knoblolly and he falls stunned.\n" +
+            "You resist the urge to murder him and help yourself to his stock instead.";
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void testFindQuotes() {
+    public void testFindQuotes() throws FileNotFoundException {
+        File tmp = new File("tmp");
+        tmp.mkdir();
+
+        PrintWriter out = new PrintWriter("tmp/text1.txt");
+        out.write(txt1);
+        out.close();
+        out = new PrintWriter("tmp/text2.txt");
+        out.write(txt2);
+        out.close();
+        out = new PrintWriter("tmp/text3.txt");
+        out.write(txt3);
+        out.close();
+        out = new PrintWriter("tmp/text4.txt");
+        out.write(txt4);
+        out.close();
+
         List<String> paths = Arrays.asList(
-                "src/test/resources/text1.txt",
-                "src/test/resources/text2.txt",
-                "src/test/resources/text3.txt",
-                "src/test/resources/text4.txt"
+                "tmp/text1.txt",
+                "tmp/text2.txt",
+                "tmp/text3.txt",
+                "tmp/text4.txt"
         );
         List<String> result = Arrays.asList(
                 "and she has no funds to reward you.",
@@ -34,6 +100,7 @@ public class SecondPartTasksTest {
         exception.expect(UncheckedIOException.class);
         findQuotes(Collections.singletonList("wrong path"), "wrong");
     }
+
 
     @Test
     public void testPiDividedBy4() {
