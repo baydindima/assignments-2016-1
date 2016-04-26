@@ -71,24 +71,24 @@ public class SecondPartTasksTest {
         File tmp = new File("tmp");
         tmp.mkdir();
 
-        PrintWriter out = new PrintWriter("tmp/text1.txt");
+        PrintWriter out = new PrintWriter("/tmp/text1.txt");
         out.write(txt1);
         out.close();
-        out = new PrintWriter("tmp/text2.txt");
+        out = new PrintWriter("/tmp/text2.txt");
         out.write(txt2);
         out.close();
-        out = new PrintWriter("tmp/text3.txt");
+        out = new PrintWriter("/tmp/text3.txt");
         out.write(txt3);
         out.close();
-        out = new PrintWriter("tmp/text4.txt");
+        out = new PrintWriter("/tmp/text4.txt");
         out.write(txt4);
         out.close();
 
         List<String> paths = Arrays.asList(
-                "tmp/text1.txt",
-                "tmp/text2.txt",
-                "tmp/text3.txt",
-                "tmp/text4.txt"
+                "/tmp/text1.txt",
+                "/tmp/text2.txt",
+                "/tmp/text3.txt",
+                "/tmp/text4.txt"
         );
         List<String> result = Arrays.asList(
                 "and she has no funds to reward you.",
