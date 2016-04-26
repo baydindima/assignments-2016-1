@@ -19,10 +19,10 @@ public class SecondPartTasksTest {
     @Test
     public void testFindQuotes() {
         List<String> paths = Arrays.asList(
-                "./tmp/text1.txt",
-                "./tmp/text2.txt",
-                "./tmp/text3.txt",
-                "./tmp/text4.txt"
+                "src/test/resources/text1.txt",
+                "src/test/resources/text2.txt",
+                "src/test/resources/text3.txt",
+                "src/test/resources/text4.txt"
         );
         List<String> result = Arrays.asList(
                 "and she has no funds to reward you.",
