@@ -12,10 +12,10 @@ import static org.junit.Assert.assertTrue;
 public class ThreadPoolImplTest {
 
     @Test
-    public void isReadyTest() throws InterruptedException {
+    public void isReadyTest() throws InterruptedException, LightExecutionException {
         ThreadPool threadPool = new ThreadPoolImpl(1);
         LightFuture<Integer> future = threadPool.submit(() -> 0);
-        TimeUnit.MILLISECONDS.sleep(10);
+        future.get();
         assertTrue(future.isReady());
         threadPool.shutdown();
     }
@@ -32,7 +32,7 @@ public class ThreadPoolImplTest {
     public void shutdownTest() throws LightExecutionException, InterruptedException {
         ThreadPool threadPool = new ThreadPoolImpl(1);
         LightFuture<Integer> future = null;
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             future = threadPool.submit(() -> {
                 try {
                     TimeUnit.MILLISECONDS.sleep(100);

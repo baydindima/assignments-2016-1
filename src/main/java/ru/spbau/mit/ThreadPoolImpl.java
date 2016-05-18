@@ -1,6 +1,5 @@
 package ru.spbau.mit;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -8,16 +7,42 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ThreadPoolImpl implements ThreadPool {
-    private final Thread[] threads;
+    private final List<Thread> threads;
     private final Queue<LightFutureImpl> taskQueue = new LinkedList<>();
 
     public ThreadPoolImpl(int n) {
-        threads = new Thread[n];
-        for (int i = 0; i < threads.length; i++) {
-            threads[i] = new PoolThread(taskQueue);
+        threads = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            threads.add(new Thread(ThreadPoolImpl.this::run));
         }
-        Arrays.stream(threads)
-                .forEach(Thread::start);
+        threads.forEach(Thread::start);
+    }
+
+    private void run() {
+        while (!Thread.interrupted()) {
+            synchronized (taskQueue) {
+                while (taskQueue.isEmpty()) {
+                    try {
+                        taskQueue.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+                }
+            }
+            LightFutureImpl<?> future = taskQueue.poll();
+            try {
+                future.calcFuture();
+            } catch (Throwable e) {
+                future.throwable = e;
+            }
+            future.updateDependent();
+            future.finished = true;
+            synchronized (future.lock) {
+                future.lock.notifyAll();
+            }
+        }
     }
 
     @Override
@@ -36,46 +61,9 @@ public class ThreadPoolImpl implements ThreadPool {
 
     @Override
     public void shutdown() {
-        Arrays.stream(threads)
-                .forEach(Thread::interrupt);
+        threads.forEach(Thread::interrupt);
         synchronized (taskQueue) {
             taskQueue.stream().forEach(t -> t.setException(new InterruptedException()));
-        }
-    }
-
-    private static final class PoolThread extends Thread {
-        private final Queue<LightFutureImpl> taskQueue;
-
-        private PoolThread(Queue<LightFutureImpl> queue) {
-            taskQueue = queue;
-        }
-
-        @Override
-        public void run() {
-            while (!this.isInterrupted()) {
-                synchronized (taskQueue) {
-                    while (taskQueue.isEmpty()) {
-                        try {
-                            taskQueue.wait();
-                        } catch (InterruptedException ignored) {
-                        }
-                        if (isInterrupted()) {
-                            return;
-                        }
-                    }
-                }
-                LightFutureImpl<?> future = taskQueue.poll();
-                try {
-                    future.runnable.run();
-                } catch (Throwable e) {
-                    future.throwable = e;
-                }
-                future.updateDependent();
-                future.finished = true;
-                synchronized (future.lock) {
-                    future.lock.notifyAll();
-                }
-            }
         }
     }
 
@@ -83,7 +71,7 @@ public class ThreadPoolImpl implements ThreadPool {
         private final ThreadPoolImpl threadPool;
         private final List<LightFutureImpl> dependentFutures = new LinkedList<>();
         private final Object lock = new Object();
-        private final Runnable runnable;
+        private final Supplier<R> supplier;
 
         private volatile boolean finished = false;
 
@@ -92,14 +80,14 @@ public class ThreadPoolImpl implements ThreadPool {
 
         private LightFutureImpl(ThreadPoolImpl threadPool, Supplier<R> supplier) {
             this.threadPool = threadPool;
-            this.runnable = () -> result = supplier.get();
+            this.supplier = supplier;
         }
 
         private LightFutureImpl(Throwable e) {
             throwable = e;
             finished = true;
             threadPool = null;
-            runnable = null;
+            supplier = null;
         }
 
         @Override
@@ -139,6 +127,10 @@ public class ThreadPoolImpl implements ThreadPool {
                     }
             }
             return future;
+        }
+
+        private void calcFuture() {
+            result = supplier.get();
         }
 
         private <U> LightFuture<U> applyReadyTask(Function<? super R, ? extends U> f) {
