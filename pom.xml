@@ -48,10 +48,10 @@
                 <version>1.9.1</version>
                 <executions>
                     <execution>
-                        <id>add-private-test123-source</id>
-                        <phase>generate-test123-sources</phase>
+                        <id>add-private-test-source</id>
+                        <phase>generate-test-sources</phase>
                         <goals>
-                            <goal>add-test123-source</goal>
+                            <goal>add-test-source</goal>
                         </goals>
                         <configuration>
                             <sources>
@@ -82,7 +82,7 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <configLocation>src/test123/resources/checkstyle.xml</configLocation>
+                            <configLocation>src/test/resources/checkstyle.xml</configLocation>
                             <failOnViolation>true</failOnViolation>
                         </configuration>
                     </execution>

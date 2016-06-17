@@ -1,4 +1,4 @@
-package practice08;
+package practice;
 
 import java.nio.file.Path;
 

@@ -1,4 +1,4 @@
-package practice08;
+package practice;
 
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -12,10 +12,10 @@ import java.util.concurrent.*;
 
 public class ExecutorServiceMD5 implements MD5Manager {
 
-    private static final ExecutorServiceMD5 instance = new ExecutorServiceMD5();
+    private static final ExecutorServiceMD5 INSTANCE = new ExecutorServiceMD5();
 
     public static ExecutorServiceMD5 getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     @Override

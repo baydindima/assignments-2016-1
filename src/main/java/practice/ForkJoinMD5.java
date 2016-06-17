@@ -1,4 +1,4 @@
-package practice08;
+package practice;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 
 public class ForkJoinMD5 implements MD5Manager {
 
-    private static final ForkJoinMD5 instance = new ForkJoinMD5();
+    private static final ForkJoinMD5 INSTANCE = new ForkJoinMD5();
 
     public static ForkJoinMD5 getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
-    private static class ChecksumTask extends RecursiveTask<String> {
+    private static final class ChecksumTask extends RecursiveTask<String> {
         private final Path path;
 
         private ChecksumTask(Path path) {

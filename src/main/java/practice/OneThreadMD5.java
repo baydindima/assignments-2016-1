@@ -1,4 +1,4 @@
-package practice08;
+package practice;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -7,10 +7,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class OneThreadMD5 implements MD5Manager {
-    private static final OneThreadMD5 instance = new OneThreadMD5();
+    private static final OneThreadMD5 INSTANCE = new OneThreadMD5();
 
     public static OneThreadMD5 getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     @Override

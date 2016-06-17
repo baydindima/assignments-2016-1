@@ -1,10 +1,11 @@
-package practice08;
+package practice;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
-public class Main {
+public final class Main {
+    private Main() {}
 
     public static void main(String[] args) {
         String path = args[0];
