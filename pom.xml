@@ -19,7 +19,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-            <scope>test</scope>
+            <scope>test123</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -31,6 +31,13 @@
             <artifactId>junit-addons</artifactId>
             <version>1.4</version>
         </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -41,10 +48,10 @@
                 <version>1.9.1</version>
                 <executions>
                     <execution>
-                        <id>add-private-test-source</id>
-                        <phase>generate-test-sources</phase>
+                        <id>add-private-test123-source</id>
+                        <phase>generate-test123-sources</phase>
                         <goals>
-                            <goal>add-test-source</goal>
+                            <goal>add-test123-source</goal>
                         </goals>
                         <configuration>
                             <sources>
@@ -59,8 +66,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -75,7 +82,7 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <configLocation>src/test/resources/checkstyle.xml</configLocation>
+                            <configLocation>src/test123/resources/checkstyle.xml</configLocation>
                             <failOnViolation>true</failOnViolation>
                         </configuration>
                     </execution>
